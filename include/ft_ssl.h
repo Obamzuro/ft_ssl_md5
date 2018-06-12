@@ -6,11 +6,12 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/12 15:52:34 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/12 15:52:54 by obamzuro         ###   ########.fr       */
+/*   Updated: 2018/06/12 16:58:42 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef __FT_SSL_H
 # define __FT_SSL_H
-
+# include "libft.h"
+# include "ft_printf.h"
 #endif

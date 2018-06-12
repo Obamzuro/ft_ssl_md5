@@ -6,7 +6,7 @@
 #    By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/06/12 15:33:52 by obamzuro          #+#    #+#              #
-#    Updated: 2018/06/12 16:15:53 by obamzuro         ###   ########.fr        #
+#    Updated: 2018/06/12 18:37:45 by obamzuro         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,18 +26,21 @@ HDRDIR = include\
 
 HDR = include/ft_ssl.h
 
-all: $(NAME)
+FLAGS = -g
+
+all: qwe $(NAME)
 
 $(NAME): $(OBJ) $(LIBS)
-	make -C libft
-	make -C libftprintf
 	gcc $(FLAGS) $(addprefix -I , $(HDRDIR)) -L libft -lft -L libftprintf -lftprintf $(OBJ) -o $(NAME)
 
-libft/libft.a:
+qwe:
 	make -C libft
-
-libftprintf/libftprintf.a:
 	make -C libftprintf
+#libft/libft.a:
+#	make -C libft
+#
+#libftprintf/libftprintf.a:
+#	make -C libftprintf
 
 %.o:%.c $(HDR)
 	gcc $(FLAGS) $(addprefix -I , $(HDRDIR)) -c $< -o $@
