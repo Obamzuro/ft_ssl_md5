@@ -6,13 +6,14 @@
 #    By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/06/12 15:33:52 by obamzuro          #+#    #+#              #
-#    Updated: 2018/06/12 18:37:45 by obamzuro         ###   ########.fr        #
+#    Updated: 2018/06/14 14:35:27 by obamzuro         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = ft_ssl
 
-SRCNAME = main.c
+SRCNAME = main.c	\
+		  parser.c
 
 SRC = $(addprefix source/, $(SRCNAME))
 

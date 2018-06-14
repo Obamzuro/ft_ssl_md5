@@ -6,7 +6,7 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/12 15:53:03 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/13 19:57:57 by obamzuro         ###   ########.fr       */
+/*   Updated: 2018/06/14 14:50:27 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,13 @@ uint64_t	ft_strlen64(char *str)
 	return (i);
 }
 
-void		add_size(char *buffer, uint64_t bufferlen,
+void		add_size_md5(char *buffer, uint64_t bufferlen,
 		uint64_t meslen)
 {
 	buffer[bufferlen - 5] = (meslen & 0x00000000FF000000) >> 24;
 	buffer[bufferlen - 6] = (meslen & 0x0000000000FF0000) >> 16;
 	buffer[bufferlen - 7] = (meslen & 0x000000000000FF00) >> 8;
 	buffer[bufferlen - 8] = (meslen & 0x00000000000000FF);
-
 	buffer[bufferlen - 1] = (meslen & 0xFF00000000000000) >> 56;
 	buffer[bufferlen - 2] = (meslen & 0x00FF000000000000) >> 48;
 	buffer[bufferlen - 3] = (meslen & 0x0000FF0000000000) >> 40;
@@ -43,7 +42,6 @@ void		add_size_sha(char *buffer, uint64_t bufferlen,
 	buffer[bufferlen - 2] = (meslen & 0x0000000000FF0000) >> 16;
 	buffer[bufferlen - 3] = (meslen & 0x000000000000FF00) >> 8;
 	buffer[bufferlen - 4] = (meslen & 0x00000000000000FF);
-
 	buffer[bufferlen - 5] = (meslen & 0xFF00000000000000) >> 56;
 	buffer[bufferlen - 6] = (meslen & 0x00FF000000000000) >> 48;
 	buffer[bufferlen - 7] = (meslen & 0x0000FF0000000000) >> 40;
@@ -94,12 +92,12 @@ const int	g_md5_s[] =
 	6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
 };
 
-void		init_abcd(t_abcd *abcd)
+void		init_md5vars(uint32_t md5vars[4])
 {
-	abcd->a = 0x67452301;
-	abcd->b = 0xEFCDAB89;
-	abcd->c = 0x98BADCFE;
-	abcd->d = 0x10325476;
+	md5vars[0] = 0x67452301;
+	md5vars[1] = 0xEFCDAB89;
+	md5vars[2] = 0x98BADCFE;
+	md5vars[3] = 0x10325476;
 }
 
 uint32_t	cycle_shift_left(uint32_t num, int offset)
@@ -117,41 +115,79 @@ uint64_t	cycle_shift_right64(uint64_t num, int offset)
 	return ((num >> offset) | (num << (64 - offset)));
 }
 
-void		procceed_rounds(char *buffer, uint64_t bufferlen, t_abcd *abcd)
+uint32_t	md5_f(uint32_t x, uint32_t y, uint32_t z)
+{
+	return ((x & y) | (~x & z));
+}
+
+uint32_t	md5_g(uint32_t x, uint32_t y, uint32_t z)
+{
+	return ((x & z) | (y & ~z));
+}
+
+uint32_t	md5_h(uint32_t x, uint32_t y, uint32_t z)
+{
+	return (x ^ y ^ z);
+}
+
+uint32_t	md5_i(uint32_t x, uint32_t y, uint32_t z)
+{
+	return (y ^ (x | ~z));
+}
+
+uint32_t	md5_round_calc(char *buffer, uint64_t i, int j,
+		uint32_t var[4])
+{
+	uint32_t	temp;
+
+	if (j < 16)
+		temp = var[1] + (cycle_shift_left(var[0] +
+					md5_f(var[1], var[2], var[3]) +
+					((uint32_t *)(buffer + i))[j] +
+					g_md5_t[j], g_md5_s[j]));
+	else if (j < 32)
+		temp = var[1] + (cycle_shift_left(var[0] +
+					md5_g(var[1], var[2], var[3]) +
+					((uint32_t *)(buffer + i))[(5 * j + 1) % 16] +
+					g_md5_t[j], g_md5_s[j]));
+	else if (j < 48)
+		temp = var[1] + (cycle_shift_left(var[0] +
+					md5_h(var[1], var[2], var[3]) +
+					((uint32_t *)(buffer + i))[(3 * j + 5) % 16] +
+					g_md5_t[j], g_md5_s[j]));
+	else
+		temp = var[1] + (cycle_shift_left(var[0] +
+					md5_i(var[1], var[2], var[3]) +
+					((uint32_t *)(buffer + i))[(7 * j) % 16] +
+					g_md5_t[j], g_md5_s[j]));
+	return (temp);
+}
+
+void		md5_rounds(char *buffer, uint64_t bufferlen, uint32_t var[4])
 {
 	uint64_t	i;
 	int			j;
 	uint32_t	temp;
-	t_abcd		mem;
+	uint32_t	pvar[4];
 
-	init_abcd(abcd);
+	init_md5vars(var);
 	i = 0;
 	while (i < bufferlen)
 	{
-		mem = *abcd;
-		j = 0;
-		while (j < 64)
+		ft_memcpy(pvar, var, 16);
+		j = -1;
+		while (++j < 64)
 		{
-			if (j < 16)
-				abcd->a = abcd->b + (cycle_shift_left(abcd->a + ((abcd->b & abcd->c) | (~abcd->b & abcd->d)) + ((uint32_t *)(buffer + i))[j] + g_md5_t[j], g_md5_s[j]));
-			else if (j < 32)
-				abcd->a = abcd->b + (cycle_shift_left(abcd->a + ((abcd->b & abcd->d) | (abcd->c & ~abcd->d)) + ((uint32_t *)(buffer + i))[(5 * j + 1) % 16] + g_md5_t[j], g_md5_s[j]));
-			else if (j < 48)
-				abcd->a = abcd->b + (cycle_shift_left(abcd->a + (abcd->b ^ abcd->c ^ abcd->d) + ((uint32_t *)(buffer + i))[(3 * j + 5) % 16] + g_md5_t[j], g_md5_s[j]));
-			else
-				abcd->a = abcd->b + (cycle_shift_left(abcd->a + (abcd->c ^ (abcd->b | ~abcd->d)) + ((uint32_t *)(buffer + i))[(7 * j) % 16] + g_md5_t[j], g_md5_s[j]));
-			//printf("%d - %zd %zd %zd %zd\n", j, abcd->a, abcd->b, abcd->c, abcd->d);
-			temp = abcd->a;
-			abcd->a = abcd->d;
-			abcd->d = abcd->c;
-			abcd->c = abcd->b;
-			abcd->b = temp;
-			++j;
+			temp = md5_round_calc(buffer, i, j, var);
+			var[0] = var[3];
+			var[3] = var[2];
+			var[2] = var[1];
+			var[1] = temp;
 		}
-		abcd->a = mem.a + abcd->a;
-		abcd->b = mem.b + abcd->b;
-		abcd->c = mem.c + abcd->c;
-		abcd->d = mem.d + abcd->d;
+		var[0] += pvar[0];
+		var[1] += pvar[1];
+		var[2] += pvar[2];
+		var[3] += pvar[3];
 		i += 64;
 	}
 }
@@ -174,7 +210,6 @@ const uint32_t	g_sha_k32[] = {
 	0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
 	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
-
 
 uint32_t		ch32(uint32_t x, uint32_t y, uint32_t z)
 {
@@ -252,7 +287,7 @@ uint64_t		delta164(uint64_t x)
 			x >> 10);
 }
 
-void		init_sha256(uint32_t	var[8])
+void		init_sha256_vars(uint32_t var[8])
 {
 	var[0] = 0x6a09e667;
 	var[1] = 0xbb67ae85;
@@ -264,70 +299,94 @@ void		init_sha256(uint32_t	var[8])
 	var[7] = 0x5be0cd19;
 }
 
-void		print_sha256(char *buffer, uint64_t bufferlen)
+void		sha256_cycle(uint32_t var[8], uint32_t w[64])
+{
+	uint32_t	temp1;
+	uint32_t	temp2;
+	int			j;
+
+	j = 0;
+	while (j < 64)
+	{
+		temp1 = var[7] + sigma132(var[4]) +
+			ch32(var[4], var[5], var[6]) + w[j] + g_sha_k32[j];
+		temp2 = sigma032(var[0]) + maj32(var[0], var[1], var[2]);
+		var[7] = var[6];
+		var[6] = var[5];
+		var[5] = var[4];
+		var[4] = var[3] + temp1;
+		var[3] = var[2];
+		var[2] = var[1];
+		var[1] = var[0];
+		var[0] = temp1 + temp2;
+		++j;
+	}
+}
+
+void		sha256_calc(char *buffer, uint64_t bufferlen,
+		uint32_t var[8], uint32_t mem[8])
 {
 	uint32_t	w[64];
 	uint32_t	i;
 	int			j;
-	uint32_t	var[8];
-	uint32_t	mem[8];
-	uint32_t	temp1;
-	uint32_t	temp2;
 
-	init_sha256(var);
+	init_sha256_vars(var);
 	i = 0;
 	while (i < bufferlen)
 	{
-		j = 0;
-		while (j < 8)
-		{
-			mem[j] = var[j];
-			++j;
-		}
-		j = 0;
-		while (j < 16)
-		{
+		ft_memcpy(mem, var, 32);
+		j = -1;
+		while (++j < 16)
 			w[j] = ((uint32_t *)(buffer + i))[j];
-			++j;
-		}
 		while (j < 64)
 		{
-			w[j] = w[j - 16] + delta032(w[j - 15]) + w[j - 7] + delta132(w[j - 2]);
+			w[j] = w[j - 16] + delta032(w[j - 15])
+				+ w[j - 7] + delta132(w[j - 2]);
 			++j;
 		}
-		j = 0;
-		//print_memory(w, 64 * 4);
-		while (j < 64)
-		{
-			temp1 = var[7] + sigma132(var[4]) + ch32(var[4], var[5], var[6]) + w[j] + g_sha_k32[j];
-			temp2 = sigma032(var[0]) + maj32(var[0], var[1], var[2]);
-			var[7] = var[6];
-			var[6] = var[5];
-			var[5] = var[4];
-			var[4] = var[3] + temp1;
-			var[3] = var[2];
-			var[2] = var[1];
-			var[1] = var[0];
-			var[0] = temp1 + temp2;
-			//ft_printf("%d - %x %x %x %x %x %x %x %x\n", j, var[0], var[1], var[2], var[3],
-			//	var[4], var[5], var[6], var[7]);
-			++j;
-		}
-		j = 0;
-		while (j < 8)
-		{
+		sha256_cycle(var, w);
+		j = -1;
+		while (++j < 8)
 			var[j] = mem[j] + var[j];
-			++j;
-		}
 		i += 64;
 	}
-	ft_printf("%x%x%x%x%x%x%x%x\n", var[0], var[1], var[2], var[3],
-			var[4], var[5], var[6], var[7]);
 }
 
-void		print_md5(char *line, char params[256])
+void		print_md5(char *message)
 {
+	uint32_t	md5vars[4];
+	char		*buffer;
+	uint64_t	meslen;
+	uint64_t	bufferlen;
 
+	meslen = ft_strlen64(message);
+	bufferlen = ((meslen + 8) / 64 + 1) * 64;
+	buffer = ft_strnew(bufferlen + 1);
+	ft_strcpy(buffer, message);
+	buffer[meslen] = 0x80;
+	add_size_md5(buffer, bufferlen, meslen * 8);
+	md5_rounds(buffer, bufferlen, md5vars);
+	ft_printf("%x%x%x%x", md5vars[0], md5vars[1], md5vars[2], md5vars[3]);
+}
+
+void		print_sha256(char *message)
+{
+	char		*buffer;
+	uint64_t	meslen;
+	uint64_t	bufferlen;
+	uint32_t	var[8];
+	uint32_t	mem[8];
+
+	meslen = ft_strlen64(message);
+	bufferlen = ((meslen + 8) / 64 + 1) * 64;
+	buffer = ft_strnew(bufferlen + 1);
+	ft_strcpy(buffer, message);
+	buffer[meslen] = 0x80;
+	reverse_32(buffer, meslen);
+	add_size_sha(buffer, bufferlen, meslen * 8);
+	sha256_calc(buffer, bufferlen, var, mem);
+	ft_printf("%x%x%x%x%x%x%x%x", var[0], var[1], var[2], var[3],
+			var[4], var[5], var[6], var[7]);
 }
 
 void		hash_stdin(char **argv, char params[256],
@@ -338,43 +397,114 @@ void		hash_stdin(char **argv, char params[256],
 
 	ret = get_next_line(0, &line);
 	if (ret == -1)
-		ft_printf(2, "%s: STDIN ERROR\n", argv[0]);
+		ft_fprintf(2, "%s: STDIN ERROR\n", argv[0]);
 	else
 		hashfun(line);
+	free(line);
+}
+
+void		print_hash(char *message, char params[256],
+		t_algh_corr *algh, char *filename)
+{
+	if (!params['q'])
+	{
+		if (!params['r'])
+		{
+			if (filename == message)
+				ft_printf("%s (\"%s\") = ", algh->namecap, message);
+			else
+				ft_printf("%s (%s) = ", algh->namecap, filename);
+			algh->func(message);
+			ft_printf("\n");
+		}
+		else if (params['r'])
+		{
+			algh->func(message);
+			if (filename != message)
+				ft_printf(" \"%s\"\n", message);
+			else
+				ft_printf(" %s\n", filename);
+		}
+	}
+	else
+	{
+		algh->func(message);
+		ft_printf("\n");
+	}
+}
+
+int			get_file_str_inner(int fd, char **ret)
+{
+	uintmax_t	size;
+	char		*temp;
+	int			readret;
+
+	size = 1024;
+	*ret = (char *)malloc(size);
+	ft_bzero(*ret, size);
+	while ((readret = read(fd, *ret, size - 1)) >= 0)
+	{
+		if (!readret)
+			break ;
+		size *= 2;
+		temp = (char *)malloc(size);
+		ft_bzero(temp, size);
+		ft_strcpy(temp, *ret);
+		free(*ret);
+		*ret = temp;
+	}
+	return (readret);
+}
+
+char		*get_file_str(char *filename, char **argv)
+{
+	char		*ret;
+	int			fd;
+	int			readret;
+
+	fd = open(filename, O_RDONLY);
+	if (fd == -1)
+	{
+		ft_fprintf(2, strerror(errno));
+		return (0);
+	}
+	readret = get_file_str_inner(fd, &ret);
+	if (readret == -1)
+	{
+		ft_fprintf(2, "%s: File reading Error: %s\n", argv[0], filename);
+		free(ret);
+		return (0);
+	}
+	return (ret);
 }
 
 int			main(int argc, char **argv)
 {
 	char		params[256];
-	char		*message;
-	char		*buffer;
-	uint64_t	meslen;
-	uint64_t	bufferlen;
-	t_abcd		abcd;
 	int			lastparam;
-	void		(*hashfun)(char *);
+	t_algh_corr	algh;
+	char		*initstr;
 
-	lastparam = preparation(argc, argv, params, hashfun);
-	if (params['p'])
-		hash_stdin(argv, params, hashfun);
+	lastparam = preparation(argc, argv, params, &algh);
+//	if (params['p'])
+//		hash_stdin(argv, params, hashfun);
 	while (lastparam < argc)
 	{
-		hashfun(argv[lastparam]);
+		if (params['s'])
+		{
+			initstr = argv[lastparam];
+			params['s'] = 0;
+		}
+		else
+			initstr = get_file_str(argv[lastparam], argv);
+		if (!initstr)
+		{
+			++lastparam;
+			continue ;
+		}
+		print_hash(initstr, params, &algh, argv[lastparam]);
+		if (argv[lastparam] != initstr)
+			free(initstr);
 		++lastparam;
 	}
-	message = argv[1];
-	meslen = ft_strlen64(argv[1]);
-	bufferlen = ((meslen + 8) / 64 + 1) * 64;
-	buffer = ft_strnew(bufferlen + 1);
-	ft_strcpy(buffer, message);
-	buffer[meslen] = 0x80;
-	reverse_32(buffer, meslen);
-	add_size_sha(buffer, bufferlen, meslen * 8);
-	print_sha256(buffer, bufferlen);
-	//print_memory(buffer, bufferlen);
-	//procceed_rounds(buffer, bufferlen, &abcd);
-	//ft_printf("%zd %zd %zd %zd\n", abcd.a, abcd.b, abcd.c, abcd.d);
-	//ft_printf("%x %x %x %x\n", abcd.a, abcd.b, abcd.c, abcd.d);
-	//reverse_32(&abcd, 16);
-	//ft_printf("%x%x%x%x\n", abcd.a, abcd.b, abcd.c, abcd.d);
 }
