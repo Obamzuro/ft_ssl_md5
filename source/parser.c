@@ -6,7 +6,7 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/05/02 18:40:12 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/14 15:02:51 by obamzuro         ###   ########.fr       */
+/*   Updated: 2018/06/14 20:05:45 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,12 @@ static void	fill_alghs(t_algh_corr *alghs)
 	alghs[1].name = "sha256";
 	alghs[1].namecap = "SHA256";
 	alghs[1].func = print_sha256;
+	alghs[2].name = "sha224";
+	alghs[2].namecap = "SHA224";
+	alghs[2].func = print_sha224;
+	alghs[3].name = "sha512";
+	alghs[3].namecap = "SHA512";
+	alghs[3].func = print_sha512;
 }
 
 int			preparation(int argc, char **argv,
