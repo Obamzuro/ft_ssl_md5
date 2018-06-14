@@ -6,7 +6,7 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/12 15:53:03 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/14 20:34:20 by obamzuro         ###   ########.fr       */
+/*   Updated: 2018/06/14 22:10:30 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,14 @@ void		add_size_sha64(char *buffer, __uint128_t bufferlen,
 	buffer[bufferlen - 6] = (meslen & 0x00FF000000000000) >> 48;
 	buffer[bufferlen - 7] = (meslen & 0x0000FF0000000000) >> 40;
 	buffer[bufferlen - 8] = (meslen & 0x000000FF00000000) >> 32;
+	buffer[bufferlen - 9] = (meslen >> 64 & 0x00000000FF000000) >> 24;
+	buffer[bufferlen - 10] = (meslen >> 64 & 0x0000000000FF0000) >> 16;
+	buffer[bufferlen - 11] = (meslen >> 64 & 0x000000000000FF00) >> 8;
+	buffer[bufferlen - 12] = (meslen >> 64 & 0x00000000000000FF);
+	buffer[bufferlen - 13] = (meslen >> 64 & 0xFF00000000000000) >> 56;
+	buffer[bufferlen - 14] = (meslen >> 64 & 0x00FF000000000000) >> 48;
+	buffer[bufferlen - 15] = (meslen >> 64 & 0x0000FF0000000000) >> 40;
+	buffer[bufferlen - 16] = (meslen >> 64 & 0x000000FF00000000) >> 32;
 }
 
 void		reverse_32(void *bufp, uint64_t meslen)
@@ -286,9 +294,9 @@ uint32_t		sigma032(uint32_t x)
 
 uint64_t		sigma064(uint64_t x)
 {
-	return (cycle_shift_right64(x, 2) ^
-			cycle_shift_right64(x, 13) ^
-			cycle_shift_right64(x, 22));
+	return (cycle_shift_right64(x, 28) ^
+			cycle_shift_right64(x, 34) ^
+			cycle_shift_right64(x, 39));
 }
 
 uint32_t		sigma132(uint32_t x)
@@ -300,9 +308,9 @@ uint32_t		sigma132(uint32_t x)
 
 uint64_t		sigma164(uint64_t x)
 {
-	return (cycle_shift_right64(x, 6) ^
-			cycle_shift_right64(x, 11) ^
-			cycle_shift_right64(x, 25));
+	return (cycle_shift_right64(x, 14) ^
+			cycle_shift_right64(x, 18) ^
+			cycle_shift_right64(x, 41));
 }
 
 uint32_t		delta032(uint32_t x)
@@ -314,9 +322,9 @@ uint32_t		delta032(uint32_t x)
 
 uint64_t		delta064(uint64_t x)
 {
-	return (cycle_shift_right64(x, 7) ^
-			cycle_shift_right64(x, 18) ^
-			x >> 3);
+	return (cycle_shift_right64(x, 1) ^
+			cycle_shift_right64(x, 8) ^
+			x >> 7);
 }
 
 uint32_t		delta132(uint32_t x)
@@ -328,9 +336,9 @@ uint32_t		delta132(uint32_t x)
 
 uint64_t		delta164(uint64_t x)
 {
-	return (cycle_shift_right64(x, 17) ^
-			cycle_shift_right64(x, 19) ^
-			x >> 10);
+	return (cycle_shift_right64(x, 19) ^
+			cycle_shift_right64(x, 61) ^
+			x >> 6);
 }
 
 void		init_sha256_vars(uint32_t var[8])
@@ -393,6 +401,32 @@ void		sha256_cycle(uint32_t var[8], uint32_t w[64])
 	}
 }
 
+void		sha512_cycle(uint64_t var[8], uint64_t w[80])
+{
+	uint64_t	temp1;
+	uint64_t	temp2;
+	int			j;
+
+	j = 0;
+	while (j < 80)
+	{
+	ft_printf("%d - %016jx %016jx %016jx %016jx %016jx %016jx %016jx %016jx\n", j, var[0], var[1], var[2], var[3],
+			var[4], var[5], var[6], var[7]);
+		temp1 = var[7] + sigma164(var[4]) +
+			ch64(var[4], var[5], var[6]) + w[j] + g_sha_k64[j];
+		temp2 = sigma064(var[0]) + maj64(var[0], var[1], var[2]);
+		var[7] = var[6];
+		var[6] = var[5];
+		var[5] = var[4];
+		var[4] = var[3] + temp1;
+		var[3] = var[2];
+		var[2] = var[1];
+		var[1] = var[0];
+		var[0] = temp1 + temp2;
+		++j;
+	}
+}
+
 void		sha256_calc(char *buffer, uint64_t bufferlen,
 		uint32_t var[8], uint32_t mem[8])
 {
@@ -418,6 +452,35 @@ void		sha256_calc(char *buffer, uint64_t bufferlen,
 		while (++j < 8)
 			var[j] = mem[j] + var[j];
 		i += 64;
+	}
+}
+
+void		sha512_calc(char *buffer, __uint128_t bufferlen,
+		uint64_t var[8], uint64_t mem[8])
+{
+	uint64_t	w[80];
+	uint64_t	i;
+	int			j;
+
+	i = 0;
+	while (i < bufferlen)
+	{
+		ft_memcpy(mem, var, 64);
+		j = -1;
+		while (++j < 16)
+			w[j] = ((uint64_t *)(buffer + i))[j];
+		while (j < 80)
+		{
+			w[j] = w[j - 16] + delta064(w[j - 15])
+				+ w[j - 7] + delta164(w[j - 2]);
+			++j;
+		}
+		print_memory(w, 1024);
+		sha512_cycle(var, w);
+		j = -1;
+		while (++j < 8)
+			var[j] = mem[j] + var[j];
+		i += 128;
 	}
 }
 
@@ -500,9 +563,9 @@ void		print_sha512(char *message)
 	reverse_32(buffer, meslen);
 	add_size_sha64(buffer, bufferlen, meslen * 8);
 	init_sha512_vars(var);
-	sha256_calc(buffer, bufferlen, var, mem);
-	ft_printf("%08x%08x%08x%08x%08x%08x%08x", var[0], var[1], var[2], var[3],
-			var[4], var[5], var[6]);
+	sha512_calc(buffer, bufferlen, var, mem);
+	ft_printf("%016jx%016jx%016jx%016jx%016jx%016jx%016jx%016jx", var[0], var[1], var[2], var[3],
+			var[4], var[5], var[6], var[7]);
 	free(buffer);
 }
 

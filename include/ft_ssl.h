@@ -6,7 +6,7 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/12 15:52:34 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/14 20:24:58 by obamzuro         ###   ########.fr       */
+/*   Updated: 2018/06/14 20:44:35 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 # include <errno.h>
 # define PARAMS "rpsq"
 # define AM_PARAMS 4
-# define AM_ALGHS 3
+# define AM_ALGHS 4
 typedef struct	s_algh_corr
 {
 	char	*name;
