@@ -6,7 +6,7 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/12 15:53:03 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/14 14:50:27 by obamzuro         ###   ########.fr       */
+/*   Updated: 2018/06/14 17:22:34 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -366,7 +366,8 @@ void		print_md5(char *message)
 	buffer[meslen] = 0x80;
 	add_size_md5(buffer, bufferlen, meslen * 8);
 	md5_rounds(buffer, bufferlen, md5vars);
-	ft_printf("%x%x%x%x", md5vars[0], md5vars[1], md5vars[2], md5vars[3]);
+	reverse_32(md5vars, 16);
+	ft_printf("%08x%08x%08x%08x", md5vars[0], md5vars[1], md5vars[2], md5vars[3]);
 }
 
 void		print_sha256(char *message)
@@ -385,22 +386,8 @@ void		print_sha256(char *message)
 	reverse_32(buffer, meslen);
 	add_size_sha(buffer, bufferlen, meslen * 8);
 	sha256_calc(buffer, bufferlen, var, mem);
-	ft_printf("%x%x%x%x%x%x%x%x", var[0], var[1], var[2], var[3],
+	ft_printf("%08x%08x%08x%08x%08x%08x%08x%08x", var[0], var[1], var[2], var[3],
 			var[4], var[5], var[6], var[7]);
-}
-
-void		hash_stdin(char **argv, char params[256],
-		void (*hashfun)(char *))
-{
-	char	*line;
-	int		ret;
-
-	ret = get_next_line(0, &line);
-	if (ret == -1)
-		ft_fprintf(2, "%s: STDIN ERROR\n", argv[0]);
-	else
-		hashfun(line);
-	free(line);
 }
 
 void		print_hash(char *message, char params[256],
@@ -420,7 +407,7 @@ void		print_hash(char *message, char params[256],
 		else if (params['r'])
 		{
 			algh->func(message);
-			if (filename != message)
+			if (filename == message)
 				ft_printf(" \"%s\"\n", message);
 			else
 				ft_printf(" %s\n", filename);
@@ -437,23 +424,49 @@ int			get_file_str_inner(int fd, char **ret)
 {
 	uintmax_t	size;
 	char		*temp;
+	char		*buf;
 	int			readret;
 
 	size = 1024;
 	*ret = (char *)malloc(size);
 	ft_bzero(*ret, size);
-	while ((readret = read(fd, *ret, size - 1)) >= 0)
+	buf = (char *)malloc(size);
+	ft_bzero(buf, size);
+	while ((readret = read(fd, buf, 1023)) >= 0)
 	{
 		if (!readret)
 			break ;
-		size *= 2;
-		temp = (char *)malloc(size);
-		ft_bzero(temp, size);
-		ft_strcpy(temp, *ret);
-		free(*ret);
-		*ret = temp;
+		temp = *ret;
+		*ret = (char *)malloc(size);
+		ft_bzero(*ret, size);
+		ft_strcpy(*ret, temp);
+		ft_strcat(*ret, buf);
+		ft_bzero(buf, 1024);
+		free(temp);
+		size += 1024;
 	}
+	free(buf);
 	return (readret);
+}
+
+void		hash_stdin(char **argv, char params[256],
+		t_algh_corr *algh)
+{
+	char	*line;
+	int		ret;
+
+	line = 0;
+	ret = get_file_str_inner(0, &line);
+	if (params['p'])
+		ft_printf("%s", line);
+	if (ret == -1)
+		ft_fprintf(2, "%s: STDIN ERROR\n", argv[0]);
+	else
+	{
+		algh->func(line);
+		ft_printf("\n");
+	}
+	free(line);
 }
 
 char		*get_file_str(char *filename, char **argv)
@@ -465,7 +478,8 @@ char		*get_file_str(char *filename, char **argv)
 	fd = open(filename, O_RDONLY);
 	if (fd == -1)
 	{
-		ft_fprintf(2, strerror(errno));
+		ft_fprintf(2, "%s: %s: %s\n", argv[0], filename,
+				strerror(errno));
 		return (0);
 	}
 	readret = get_file_str_inner(fd, &ret);
@@ -486,8 +500,8 @@ int			main(int argc, char **argv)
 	char		*initstr;
 
 	lastparam = preparation(argc, argv, params, &algh);
-//	if (params['p'])
-//		hash_stdin(argv, params, hashfun);
+	if (lastparam == argc || params['p'])
+		hash_stdin(argv, params, &algh);
 	while (lastparam < argc)
 	{
 		if (params['s'])
