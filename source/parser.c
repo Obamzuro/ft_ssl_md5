@@ -6,13 +6,13 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/05/02 18:40:12 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/14 20:45:21 by obamzuro         ###   ########.fr       */
+/*   Updated: 2018/06/15 13:15:07 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ssl.h"
 
-static void	reset_params(char params[256])
+static void			reset_params(char params[256])
 {
 	int		i;
 
@@ -24,7 +24,7 @@ static void	reset_params(char params[256])
 	}
 }
 
-static void	check_params(char param, char **argv)
+static void			check_params(char param, char **argv)
 {
 	int		i;
 
@@ -67,7 +67,7 @@ static t_algh_corr	*return_command(int argc, char **argv,
 	return (0);
 }
 
-static void	fill_alghs(t_algh_corr *alghs)
+static void			fill_alghs(t_algh_corr *alghs)
 {
 	alghs[0].name = "md5";
 	alghs[0].namecap = "MD5";
@@ -81,9 +81,12 @@ static void	fill_alghs(t_algh_corr *alghs)
 	alghs[3].name = "sha512";
 	alghs[3].namecap = "SHA512";
 	alghs[3].func = print_sha512;
+	alghs[4].name = "sha384";
+	alghs[4].namecap = "SHA384";
+	alghs[4].func = print_sha384;
 }
 
-int			preparation(int argc, char **argv,
+int					preparation(int argc, char **argv,
 		char params[256], t_algh_corr *algh)
 {
 	int			i;

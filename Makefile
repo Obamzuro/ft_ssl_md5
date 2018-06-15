@@ -6,14 +6,26 @@
 #    By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/06/12 15:33:52 by obamzuro          #+#    #+#              #
-#    Updated: 2018/06/14 21:59:37 by obamzuro         ###   ########.fr        #
+#    Updated: 2018/06/15 12:54:30 by obamzuro         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = ft_ssl
 
-SRCNAME = main.c	\
-		  parser.c
+SRCNAME = main.c			\
+		  parser.c			\
+		  additional_funcs.c\
+		  md5.c				\
+		  md5_funcs_1.c		\
+		  md5_funcs_2.c		\
+		  sha224.c			\
+		  sha256.c			\
+		  sha32_funcs_1.c	\
+		  sha32_funcs_2.c	\
+		  sha384.c			\
+		  sha512.c			\
+		  sha64_funcs_1.c	\
+		  sha64_funcs_2.c
 
 SRC = $(addprefix source/, $(SRCNAME))
 
@@ -27,21 +39,16 @@ HDRDIR = include\
 
 HDR = include/ft_ssl.h
 
-FLAGS = -g
+FLAGS = -Wall -Wextra -Werror
 
-all: qwe $(NAME)
+all: lib $(NAME)
 
 $(NAME): $(OBJ) $(LIBS)
 	gcc $(FLAGS) $(addprefix -I , $(HDRDIR)) -L libft -lft -L libftprintf -lftprintf $(OBJ) -o $(NAME)
 
-qwe:
+lib:
 	make -C libft
 	make -C libftprintf
-#libft/libft.a:
-#	make -C libft
-#
-#libftprintf/libftprintf.a:
-#	make -C libftprintf
 
 %.o:%.c $(HDR)
 	gcc $(FLAGS) $(addprefix -I , $(HDRDIR)) -c $< -o $@
@@ -59,4 +66,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: clean fclean re all
+.PHONY: clean fclean re all lib
