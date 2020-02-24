@@ -6,7 +6,7 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/12 15:52:34 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/15 12:53:15 by obamzuro         ###   ########.fr       */
+/*   Updated: 2020/02/24 18:04:30 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,13 @@
 # include "libft.h"
 # include "ft_printf.h"
 # include <errno.h>
+# include <stdint.h>
+# include <string.h>
 # define PARAMS "rpsq"
 # define AM_PARAMS 4
-# define AM_ALGHS 5
+# define AM_ALGHS 6
+
+extern uint64_t		g_size;
 
 typedef struct	s_algh_corr
 {
@@ -72,4 +76,6 @@ void			add_size_sha64(char *buffer, __uint128_t bufferlen,
 		__uint128_t meslen);
 void			sha64_calc(char *buffer, __uint128_t bufferlen,
 		uint64_t var[8], uint64_t mem[8]);
+
+void			print_base64(char *message);
 #endif

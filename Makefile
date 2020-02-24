@@ -6,7 +6,7 @@
 #    By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/06/12 15:33:52 by obamzuro          #+#    #+#              #
-#    Updated: 2018/06/15 12:54:30 by obamzuro         ###   ########.fr        #
+#    Updated: 2020/02/24 16:43:14 by obamzuro         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,7 +25,8 @@ SRCNAME = main.c			\
 		  sha384.c			\
 		  sha512.c			\
 		  sha64_funcs_1.c	\
-		  sha64_funcs_2.c
+		  sha64_funcs_2.c	\
+		  base64/base64.c
 
 SRC = $(addprefix source/, $(SRCNAME))
 
@@ -39,7 +40,7 @@ HDRDIR = include\
 
 HDR = include/ft_ssl.h
 
-FLAGS = -Wall -Wextra -Werror
+FLAGS = -Wall -Wextra -Werror -g
 
 all: lib $(NAME)
 

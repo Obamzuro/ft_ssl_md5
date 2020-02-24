@@ -6,7 +6,7 @@
 /*   By: obamzuro <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/12 15:53:03 by obamzuro          #+#    #+#             */
-/*   Updated: 2018/06/15 13:01:16 by obamzuro         ###   ########.fr       */
+/*   Updated: 2020/02/24 18:09:55 by obamzuro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ static void		print_hash(char *message, char params[256],
 	}
 }
 
+uint64_t		g_size = 0;
+
 static int		get_file_str_inner(int fd, char **ret)
 {
 	uintmax_t	size;
@@ -54,15 +56,17 @@ static int		get_file_str_inner(int fd, char **ret)
 	ft_bzero(*ret, size);
 	buf = (char *)malloc(size);
 	ft_bzero(buf, size);
+	g_size = 0;
 	while ((readret = read(fd, buf, 1023)) >= 0)
 	{
+		g_size += readret;
 		if (!readret)
 			break ;
 		temp = *ret;
 		*ret = (char *)malloc(size);
 		ft_bzero(*ret, size);
-		ft_strcpy(*ret, temp);
-		ft_strcat(*ret, buf);
+		ft_memcpy(*ret, temp, size - 1024);
+		ft_memcpy(*ret + size - 1024, buf, readret);
 		ft_bzero(buf, 1024);
 		free(temp);
 		size += 1024;
