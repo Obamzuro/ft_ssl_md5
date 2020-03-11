@@ -38,11 +38,14 @@ static void		print_hash(char *message, char params[256],
 	else
 	{
 		algh->func(message);
+		if (!ft_strcmp(algh->name, "base64"))
+			return ;
 		ft_printf("\n");
 	}
 }
 
 uint64_t		g_size = 0;
+char			params[256];
 
 static int		get_file_str_inner(int fd, char **ret)
 {
@@ -57,7 +60,7 @@ static int		get_file_str_inner(int fd, char **ret)
 	buf = (char *)malloc(size);
 	ft_bzero(buf, size);
 	g_size = 0;
-	while ((readret = read(fd, buf, 1023)) >= 0)
+	while ((readret = read(fd, buf, 1024)) >= 0)
 	{
 		g_size += readret;
 		if (!readret)
@@ -120,7 +123,6 @@ static char		*get_file_str(char *filename, char **argv)
 
 int				main(int argc, char **argv)
 {
-	char		params[256];
 	int			lastparam;
 	t_algh_corr	algh;
 	char		*initstr;

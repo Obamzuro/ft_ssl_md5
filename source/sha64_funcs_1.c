@@ -12,31 +12,31 @@
 
 #include "ft_ssl.h"
 
-uint64_t		ch64(uint64_t x, uint64_t y, uint64_t z)
+u_int64_t		ch64(u_int64_t x, u_int64_t y, u_int64_t z)
 {
 	return ((x & y) ^ (~x & z));
 }
 
-uint64_t		maj64(uint64_t x, uint64_t y, uint64_t z)
+u_int64_t		maj64(u_int64_t x, u_int64_t y, u_int64_t z)
 {
 	return ((x & y) ^ (x & z) ^ (y & z));
 }
 
-uint64_t		sigma064(uint64_t x)
+u_int64_t		sigma064(u_int64_t x)
 {
 	return (cycle_shift_right64(x, 28) ^
 			cycle_shift_right64(x, 34) ^
 			cycle_shift_right64(x, 39));
 }
 
-uint64_t		sigma164(uint64_t x)
+u_int64_t		sigma164(u_int64_t x)
 {
 	return (cycle_shift_right64(x, 14) ^
 			cycle_shift_right64(x, 18) ^
 			cycle_shift_right64(x, 41));
 }
 
-uint64_t		delta064(uint64_t x)
+u_int64_t		delta064(u_int64_t x)
 {
 	return (cycle_shift_right64(x, 1) ^
 			cycle_shift_right64(x, 8) ^

@@ -12,7 +12,7 @@
 
 #include "ft_ssl.h"
 
-static void			init_sha512_vars(uint64_t var[8])
+static void			init_sha512_vars(u_int64_t var[8])
 {
 	var[0] = 0x6a09e667f3bcc908;
 	var[1] = 0xbb67ae8584caa73b;
@@ -29,8 +29,8 @@ void				print_sha512(char *message)
 	char		*buffer;
 	__uint128_t	meslen;
 	__uint128_t	bufferlen;
-	uint64_t	var[8];
-	uint64_t	mem[8];
+	u_int64_t	var[8];
+	u_int64_t	mem[8];
 
 	meslen = ft_strlen128(message);
 	bufferlen = ((meslen + 16) / 128 + 1) * 128;

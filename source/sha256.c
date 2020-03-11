@@ -27,8 +27,8 @@ static void		init_sha256_vars(uint32_t var[8])
 void			print_sha256(char *message)
 {
 	char		*buffer;
-	uint64_t	meslen;
-	uint64_t	bufferlen;
+	u_int64_t	meslen;
+	u_int64_t	bufferlen;
 	uint32_t	var[8];
 	uint32_t	mem[8];
 

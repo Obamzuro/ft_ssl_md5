@@ -22,7 +22,7 @@ uint32_t	cycle_shift_right32(uint32_t num, int offset)
 	return ((num >> offset) | (num << (32 - offset)));
 }
 
-uint64_t	cycle_shift_right64(uint64_t num, int offset)
+u_int64_t	cycle_shift_right64(u_int64_t num, int offset)
 {
 	return ((num >> offset) | (num << (64 - offset)));
 }

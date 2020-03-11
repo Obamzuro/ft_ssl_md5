@@ -40,12 +40,13 @@ HDRDIR = include\
 
 HDR = include/ft_ssl.h
 
-FLAGS = -Wall -Wextra -Werror -g
+FLAGS = -g
+#FLAGS = -Wall -Wextra -Werror -g
 
 all: lib $(NAME)
 
 $(NAME): $(OBJ) $(LIBS)
-	gcc $(FLAGS) $(addprefix -I , $(HDRDIR)) -L libft -lft -L libftprintf -lftprintf $(OBJ) -o $(NAME)
+	gcc $(FLAGS) $(addprefix -I , $(HDRDIR)) $(OBJ) -o $(NAME) libft/libft.a libftprintf/libftprintf.a
 
 lib:
 	make -C libft

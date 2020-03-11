@@ -38,8 +38,8 @@ uint32_t			delta132(uint32_t x)
 			x >> 10);
 }
 
-void				add_size_sha32(char *buffer, uint64_t bufferlen,
-		uint64_t meslen)
+void				add_size_sha32(char *buffer, u_int64_t bufferlen,
+		u_int64_t meslen)
 {
 	buffer[bufferlen - 1] = (meslen & 0x00000000FF000000) >> 24;
 	buffer[bufferlen - 2] = (meslen & 0x0000000000FF0000) >> 16;
@@ -75,7 +75,7 @@ static void			sha32_cycle(uint32_t var[8], uint32_t w[64])
 	}
 }
 
-void				sha32_calc(char *buffer, uint64_t bufferlen,
+void				sha32_calc(char *buffer, u_int64_t bufferlen,
 		uint32_t var[8], uint32_t mem[8])
 {
 	uint32_t	w[64];

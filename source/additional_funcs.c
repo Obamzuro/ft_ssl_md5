@@ -12,9 +12,9 @@
 
 #include "ft_ssl.h"
 
-uint64_t	ft_strlen64(char *str)
+u_int64_t	ft_strlen64(char *str)
 {
-	uint64_t	i;
+	u_int64_t	i;
 
 	i = 0;
 	while (*str++)
@@ -32,10 +32,10 @@ __uint128_t	ft_strlen128(char *str)
 	return (i);
 }
 
-void		reverse_32(void *bufp, uint64_t meslen)
+void		reverse_32(void *bufp, u_int64_t meslen)
 {
-	uint64_t	i;
-	uint64_t	stop;
+	u_int64_t	i;
+	u_int64_t	stop;
 	char		*buffer;
 
 	buffer = (char *)bufp;

@@ -12,7 +12,7 @@
 
 #include "ft_ssl.h"
 
-const uint64_t	g_sha_k64[] = {
+const u_int64_t	g_sha_k64[] = {
 	0x428a2f98d728ae22, 0x7137449123ef65cd,
 	0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
 	0x3956c25bf348b538, 0x59f111f1b605d019,
@@ -55,7 +55,7 @@ const uint64_t	g_sha_k64[] = {
 	0x5fcb6fab3ad6faec, 0x6c44198c4a475817
 };
 
-uint64_t		delta164(uint64_t x)
+u_int64_t		delta164(u_int64_t x)
 {
 	return (cycle_shift_right64(x, 19) ^
 			cycle_shift_right64(x, 61) ^
@@ -83,10 +83,10 @@ void			add_size_sha64(char *buffer, __uint128_t bufferlen,
 	buffer[bufferlen - 16] = (meslen >> 64 & 0x00000000000000FF);
 }
 
-void			sha64_cycle(uint64_t var[8], uint64_t w[80])
+void			sha64_cycle(u_int64_t var[8], u_int64_t w[80])
 {
-	uint64_t	temp1;
-	uint64_t	temp2;
+	u_int64_t	temp1;
+	u_int64_t	temp2;
 	int			j;
 
 	j = 0;
@@ -108,10 +108,10 @@ void			sha64_cycle(uint64_t var[8], uint64_t w[80])
 }
 
 void			sha64_calc(char *buffer, __uint128_t bufferlen,
-		uint64_t var[8], uint64_t mem[8])
+		u_int64_t var[8], u_int64_t mem[8])
 {
-	uint64_t	w[80];
-	uint64_t	i;
+	u_int64_t	w[80];
+	u_int64_t	i;
 	int			j;
 
 	i = 0;
@@ -120,7 +120,7 @@ void			sha64_calc(char *buffer, __uint128_t bufferlen,
 		ft_memcpy(mem, var, 64);
 		j = -1;
 		while (++j < 16)
-			w[j] = ((uint64_t *)(buffer + i))[j];
+			w[j] = ((u_int64_t *)(buffer + i))[j];
 		while (j < 80)
 		{
 			w[j] = w[j - 16] + delta064(w[j - 15])

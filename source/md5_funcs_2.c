@@ -22,8 +22,8 @@ uint32_t	md5_i(uint32_t x, uint32_t y, uint32_t z)
 	return (y ^ (x | ~z));
 }
 
-void		add_size_md5(char *buffer, uint64_t bufferlen,
-		uint64_t meslen)
+void		add_size_md5(char *buffer, u_int64_t bufferlen,
+		u_int64_t meslen)
 {
 	buffer[bufferlen - 5] = (meslen & 0x00000000FF000000) >> 24;
 	buffer[bufferlen - 6] = (meslen & 0x0000000000FF0000) >> 16;

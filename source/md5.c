@@ -48,7 +48,7 @@ static void		init_md5vars(uint32_t md5vars[4])
 	md5vars[3] = 0x10325476;
 }
 
-static uint32_t	md5_round_calc(char *buffer, uint64_t i, int j,
+static uint32_t	md5_round_calc(char *buffer, u_int64_t i, int j,
 		uint32_t var[4])
 {
 	uint32_t	temp;
@@ -76,9 +76,9 @@ static uint32_t	md5_round_calc(char *buffer, uint64_t i, int j,
 	return (temp);
 }
 
-static void		md5_rounds(char *buffer, uint64_t bufferlen, uint32_t var[4])
+static void		md5_rounds(char *buffer, u_int64_t bufferlen, uint32_t var[4])
 {
-	uint64_t	i;
+	u_int64_t	i;
 	int			j;
 	uint32_t	temp;
 	uint32_t	pvar[4];
@@ -109,8 +109,8 @@ void			print_md5(char *message)
 {
 	uint32_t	md5vars[4];
 	char		*buffer;
-	uint64_t	meslen;
-	uint64_t	bufferlen;
+	u_int64_t	meslen;
+	u_int64_t	bufferlen;
 
 	meslen = ft_strlen64(message);
 	bufferlen = ((meslen + 8) / 64 + 1) * 64;
