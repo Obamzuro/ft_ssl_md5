@@ -26,7 +26,8 @@ SRCNAME = main.c			\
 		  sha512.c			\
 		  sha64_funcs_1.c	\
 		  sha64_funcs_2.c	\
-		  base64/base64.c
+		  base64/base64.c	\
+		  des/des.c
 
 SRC = $(addprefix source/, $(SRCNAME))
 

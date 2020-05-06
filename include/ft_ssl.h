@@ -17,22 +17,52 @@
 # include <errno.h>
 # include <stdint.h>
 # include <string.h>
-# define PARAMS "rpsqd"
-# define AM_PARAMS 5
-# define AM_ALGHS 6
+# include <inttypes.h>
+# include <stdbool.h>
+# define GET_BIT(number, position) ((number >> position) & 1)
+# define SET_BIT(number, position, bit) (number = ((number & (~(1 << position))) | (bit << position)))
 
-extern u_int64_t		g_size;
-extern char			params[256];
-
-typedef struct	s_algh_corr
+typedef enum		e_ssl_algh_name
 {
-	char	*name;
-	char	*namecap;
-	void	(*func)(char *);
-}				t_algh_corr;
+	SSL_ALGH_MD5 = 0,
+	SSL_ALGH_SHA224,
+	SSL_ALGH_SHA256,
+	SSL_ALGH_SHA384,
+	SSL_ALGH_SHA512,
+	SSL_ALGH_BASE64,
+	SSL_ALGH_DES,
+	SSL_ALGH_COUNT
+}			t_ssl_algh_name;
 
-int				preparation(int argc, char **argv,
-		char params[256], t_algh_corr *alghs);
+typedef enum		e_ssl_errors
+{
+	SSL_OK = 0,
+	SSL_ERROR_WRONG_ALGH,
+	SSL_ERROR_WRONG_PARAM,
+	SSL_ERROR_COUNT
+}			t_ssl_errors;
+
+typedef struct		s_ssl_algh_flags
+{
+	uint8_t		flag;
+	bool		is_need_value;
+	char		*help;
+}			t_ssl_algh_flags;
+
+typedef struct		s_ssl_algh_corr
+{
+	char			*name;
+	t_ssl_algh_flags	*flags;
+	void			(*func)(char *);
+}			t_ssl_algh_corr;
+
+extern u_int64_t	g_ssl_size;
+extern uint8_t		*g_ssl_flags[256];
+extern t_ssl_algh_name	g_ssl_current_algh;
+extern t_ssl_algh_corr	g_ssl_alghs[SSL_ALGH_COUNT];
+uint8_t			g_ssl_last_flag_position;
+
+t_ssl_errors		handle_arguments(int argc, const char **argv);
 
 void			print_md5(char *message);
 void			print_sha256(char *message);
@@ -79,4 +109,6 @@ void			sha64_calc(char *buffer, __uint128_t bufferlen,
 		u_int64_t var[8], u_int64_t mem[8]);
 
 void			print_base64(char *message);
+
+void			print_des(char *message);
 #endif

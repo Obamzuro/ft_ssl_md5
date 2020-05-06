@@ -12,12 +12,48 @@
 
 #include "ft_ssl.h"
 
-static void		print_hash(char *message, char params[256],
+uint64_t		g_ssl_size = 0;
+uint8_t			*g_ssl_flags[256] = { NULL, };
+t_ssl_algh_name		g_ssl_current_algh;
+uint8_t			g_ssl_last_flag_position;
+
+t_ssl_algh_flags	g_ssl_algh_hashes_flags[] =
+{
+	{ .flag='q', .is_need_value=false, .help="quite"},
+	{ .flag='r', .is_need_value=false, .help="reverse"},
+	{ .flag='p', .is_need_value=false, .help="prompt"},
+	{ .flag='s', .is_need_value=false, .help="string"},
+};
+
+t_ssl_algh_corr		g_ssl_alghs[SSL_ALGH_COUNT] =
+{
+	{.name = "md5",
+	 .flags = g_ssl_algh_hashes_flags,
+	 .func = print_md5},
+	{.name = "sha256",
+	 .flags = g_ssl_algh_hashes_flags,
+	 .func = print_sha256},
+	{.name = "sha224",
+	 .flags = g_ssl_algh_hashes_flags,
+	 .func = print_sha224},
+	{.name = "sha384",
+	 .flags = g_ssl_algh_hashes_flags,
+	 .func = print_sha384},
+	{.name = "sha512",
+	 .flags = g_ssl_algh_hashes_flags,
+	 .func = print_sha512},
+	{.name = "base64",
+	 .func = print_base64},
+	{.name = "des",
+	 .func = print_des},
+}
+
+static void		print_hash(char *message, char flags[256],
 		t_algh_corr *algh, char *filename)
 {
-	if (!params['q'])
+	if (!flags['q'])
 	{
-		if (!params['r'])
+		if (!flags['r'])
 		{
 			if (filename == message)
 				ft_printf("%s (\"%s\") = ", algh->namecap, message);
@@ -26,7 +62,7 @@ static void		print_hash(char *message, char params[256],
 			algh->func(message);
 			ft_printf("\n");
 		}
-		else if (params['r'])
+		else if (flags['r'])
 		{
 			algh->func(message);
 			if (filename == message)
@@ -43,9 +79,6 @@ static void		print_hash(char *message, char params[256],
 		ft_printf("\n");
 	}
 }
-
-uint64_t		g_size = 0;
-char			params[256];
 
 static int		get_file_str_inner(int fd, char **ret)
 {
@@ -78,7 +111,7 @@ static int		get_file_str_inner(int fd, char **ret)
 	return (readret);
 }
 
-static void		hash_stdin(char **argv, char params[256],
+static void		hash_stdin(char **argv, char flags[256],
 		t_algh_corr *algh)
 {
 	char	*line;
@@ -86,7 +119,7 @@ static void		hash_stdin(char **argv, char params[256],
 
 	line = 0;
 	ret = get_file_str_inner(0, &line);
-	if (params['p'])
+	if (flags['p'])
 		ft_printf("%s", line);
 	if (ret == -1)
 		ft_fprintf(2, "%s: STDIN ERROR\n", argv[0]);
@@ -121,30 +154,30 @@ static char		*get_file_str(char *filename, char **argv)
 	return (ret);
 }
 
-int				main(int argc, char **argv)
+int				main(int argc, const char **argv)
 {
-	int			lastparam;
+	int			lastflag;
 	t_algh_corr	algh;
 	char		*initstr;
 
-	lastparam = preparation(argc, argv, params, &algh);
-	(lastparam == argc || params['p']) ? hash_stdin(argv, params, &algh) : 0;
-	while (lastparam < argc)
+	preparation(argc, argv);
+	(lastflag == argc || flags['p']) ? hash_stdin(argv, flags, &algh) : 0;
+	while (lastflag < argc)
 	{
-		if (params['s'])
+		if (flags['s'])
 		{
-			initstr = argv[lastparam];
-			params['s'] = 0;
+			initstr = argv[lastflag];
+			flags['s'] = 0;
 		}
 		else
-			initstr = get_file_str(argv[lastparam], argv);
+			initstr = get_file_str(argv[lastflag], argv);
 		if (!initstr)
 		{
-			++lastparam;
+			++lastflag;
 			continue ;
 		}
-		print_hash(initstr, params, &algh, argv[lastparam]);
-		(argv[lastparam] != initstr) ? free(initstr) : 0;
-		++lastparam;
+		print_hash(initstr, flags, &algh, argv[lastflag]);
+		(argv[lastflag] != initstr) ? free(initstr) : 0;
+		++lastflag;
 	}
 }
