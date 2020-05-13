@@ -22,7 +22,7 @@
 # define GET_BIT(number, position) ((number >> position) & 1)
 # define SET_BIT(number, position, bit) (number = ((number & (~(1 << position))) | (bit << position)))
 
-typedef enum		e_ssl_algh_hash_name =
+typedef enum		e_ssl_algh_hash_name
 {
 	SSL_ALGH_HASH_MD5 = 0,
 	SSL_ALGH_HASH_SHA224,
@@ -32,24 +32,25 @@ typedef enum		e_ssl_algh_hash_name =
 	SSL_ALGH_HASH_COUNT,
 }					t_ssl_algh_hash_name;
 
-typedef enum		 e_ssl_algh_encode_name=
+typedef enum		 e_ssl_algh_encode_name
 {
-	SSL_ALGH_ENCODE_BASE64 = 0,
+	SSL_ALGH_ENCODE_BASE64 = SSL_ALGH_HASH_COUNT,
 	SSL_ALGH_ENCODE_COUNT,
 }					t_ssl_algh_encode_name;
 
-typedef enum		e_ssl_algh_cypher_name =
+typedef enum		e_ssl_algh_cypher_name
 {
-	SSL_ALGH_CYPHER_DES = 0,
+	SSL_ALGH_CYPHER_DES = SSL_ALGH_ENCODE_COUNT,
 	SSL_ALGH_CYPHER_COUNT,
+	SSL_ALGH_COUNT = SSL_ALGH_CYPHER_COUNT,
 }					t_ssl_algh_cypher_name;
 
 typedef enum		e_ssl_algh_type
 {
-	SSL_ALGH_HASH = 0,
-	SSL_ALGH_ENCODE,
-	SSL_ALGH_CYPHER,
-	SSL_ALGH_COUNT
+	SSL_ALGH_TYPE_HASH = 0,
+	SSL_ALGH_TYPE_ENCODE,
+	SSL_ALGH_TYPE_CYPHER,
+	SSL_ALGH_TYPE_COUNT
 }					t_ssl_algh_type;
 
 typedef enum		e_ssl_errors
@@ -57,7 +58,8 @@ typedef enum		e_ssl_errors
 	SSL_OK = 0,
 	SSL_ERROR_WRONG_ALGH,
 	SSL_ERROR_WRONG_PARAM,
-	SSL_ERROR_STDIN_ERROR,
+	SSL_ERROR_GET_FILE_ERROR,
+	SSL_ERROR_HASH,
 	SSL_ERROR_COUNT
 }					t_ssl_errors;
 
@@ -66,22 +68,29 @@ typedef struct		s_ssl_algh_flags
 	uint8_t		flag;
 	bool		is_need_value;
 	char		*help;
-}			t_ssl_algh_flags;
+}					t_ssl_algh_flags;
 
 typedef struct		s_ssl_algh
 {
 	char				*name;
-	t_ssl_algh_type		type;
-	t_ssl_algh_flags	flags[];
-	t_ssl_errors		(*func)(char *);
+	uint8_t				type_name;
+	t_ssl_algh_flags	*flags;
+	t_ssl_errors		(*func)(int, const char **);
 }					t_ssl_algh;
+
+typedef struct		s_ssl_algh_hash
+{
+	t_ssl_algh_hash_name	hash_type;
+	t_ssl_errors			(*func)(char *);
+}					t_ssl_algh_hash;
 
 extern u_int64_t		g_ssl_size;
 
 extern uint8_t			*g_ssl_flags[256];
 extern t_ssl_algh		g_ssl_current_algh;
-extern t_ssl_algh		g_ssl_alghs[SSL_ALGH_HASH_COUNT + SSL_ALGH_ENCODE_COUNT + SSL_ALGH_CYPHER_COUNT];
-uint8_t					g_ssl_last_flag_position;
+extern t_ssl_algh		g_ssl_alghs[SSL_ALGH_COUNT];
+extern t_ssl_algh_hash	g_ssl_hash_alghs[SSL_ALGH_HASH_COUNT - SSL_ALGH_HASH_MD5];
+extern uint16_t			g_ssl_last_flag_position;
 
 t_ssl_errors		handle_arguments(int argc, const char **argv);
 
@@ -89,11 +98,11 @@ t_ssl_errors	ssl_print_hash(int argc, const char **argv);
 t_ssl_errors	ssl_print_base64(int argc, const char **argv);
 t_ssl_errors	ssl_print_des(int argc, const char **argv);
 
-void			print_md5(char *message);
-void			print_sha256(char *message);
-void			print_sha224(char *message);
-void			print_sha512(char *message);
-void			print_sha384(char *message);
+t_ssl_errors			print_md5(char *message);
+t_ssl_errors			print_sha256(char *message);
+t_ssl_errors			print_sha224(char *message);
+t_ssl_errors			print_sha512(char *message);
+t_ssl_errors			print_sha384(char *message);
 
 u_int64_t		ft_strlen64(char *str);
 __uint128_t		ft_strlen128(char *str);

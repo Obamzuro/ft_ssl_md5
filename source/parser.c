@@ -85,7 +85,7 @@ static t_ssl_errors			ssl_fill_flags(int argc, const char **argv)
 
 static t_ssl_errors			ssl_select_algh(int argc, const char **argv)
 {
-	uint16_t	algh_number;
+	uint16_t			algh_number;
 
 	if (argc > 1)
 	{
